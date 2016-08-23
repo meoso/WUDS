@@ -1,6 +1,17 @@
-iface=`grep IFACE config.py | cut -d'=' -f 2 | sed "s/['\" ]//g"`
-sudo iw dev wlan0 interface add $iface type monitor
-sudo ifconfig $iface up
+#!/bin/bash
+# run WUDS
+#  -- uses first wireless interface if IFACE isn't set in config
+
+IFACE=`grep IFACE config.py | cut -d'=' -f 2 | sed "s/['\" ]//g"`
+
+if [ "$IFACE" == "" ]; then 
+	IFACE=`iwconfig 2>&1 | grep IEEE | cut -d" " -f 1`; 
+	fi
+
+sudo ifconfig $IFACE down
+#sudo iw dev $IFACE interface add $IFACE type monitor
+iwconfig $IFACE mode mon
+sudo ifconfig $IFACE up
 sudo python ./core.py
-sudo ifconfig $iface down
-sudo iw dev $iface del
+sudo ifconfig $IFACE down
+#sudo iw dev $IFACE del
