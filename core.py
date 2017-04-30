@@ -8,6 +8,7 @@ import sys
 import traceback
 import urllib2
 import ssl
+import codecs
 
 # import wuds modules
 sys.dont_write_bytecode = True
@@ -46,10 +47,12 @@ def log(log_type, values):
 
 def log_message(level, message):
     log(0, (MESSAGE_LEVELS[level], message))
+    print level,message
 
 def log_probe(bssid, rssi, essid):
     oui = resolve_oui(bssid)
     log(1, (bssid, rssi, essid, oui))
+    print datetime.now(),"caught probe:",bssid,rssi,essid
 
 def is_admin_oui(mac):
     return int(mac.split(':')[0], 16) & 2
@@ -62,25 +65,22 @@ def resolve_oui(mac):
             ouis[mac] = ADMIN_OUI
         # retrieve mac vendor from oui lookup api
         else:
-            try:
-                # this creates an ssl context that doesn't validate the ssl cert, so if macvendorlookup.com's
-                # cert expires (as it did May 2016), it still parses the results - des 06-2016
-                sadfacecontext = ssl.create_default_context()
-                sadfacecontext.check_hostname = False
-                sadfacecontext.verify_mode = ssl.CERT_NONE
-                resp = urllib2.urlopen('https://www.macvendorlookup.com/api/v2/%s' % mac,context=sadfacecontext)
-                if resp.code == 204:
-                    ouis[mac] = 'Unknown'
-                elif resp.code == 200:
-                    jsonobj = json.load(resp)
-                    ouis[mac] = jsonobj[0]['company']
-                else:
-                    raise Exception('Invalid response code: %d' % (resp.code))
+            url = "http://macvendors.co/api/"
+            print "lookup url:",url+mac
+
+            request = urllib2.Request(url+mac,headers={'User-Agent' : "API Browser"})
+            resp = response = urllib2.urlopen( request )
+
+            reader = codecs.getreader("utf-8")
+            jsonobj = json.load(reader(resp))
+
+            tmpcompany = (jsonobj['result']['company'])
+
+            if tmpcompany:
+                ouis[mac] = tmpcompany
                 log_message(0, 'OUI resolved. [%s => %s]' % (mac, ouis[mac]))
-            except Exception as e:
-                log_message(1, 'OUI resolution failed. [%s => %s]' % (mac, str(e)))
-                # return, but don't store the value
-                return 'Error'
+            else:
+                log_message(1, 'OUI resoltion failed. [%s]' % (mac))
     return ouis[mac]
 
 def call_alerts(**kwargs):
@@ -165,6 +165,7 @@ with sqlite3.connect(LOG_FILE) as conn:
             except KeyboardInterrupt:
                 break
             except:
-                if DEBUG: print traceback.format_exec()
+                #if DEBUG: print traceback.format_exec()
                 continue
+
         log_message(0, 'WUDS stopped.')
