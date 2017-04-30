@@ -4,7 +4,7 @@
 #=========
 
 # (STR) WLAN interface in monitor mode
-IFACE = 'mon0'
+IFACE = 'wlan0'
 
 # (LIST) List of MAC addresses expected within the premises
 MAC_LIST = [
@@ -23,7 +23,7 @@ ADMIN_OUI = 'Admin OUI'
 ADMIN_IGNORE = False
 
 # (INT) RSSI threshold for triggering alerts
-RSSI_THRESHOLD = -50
+RSSI_THRESHOLD = -70
 
 # (INT) Number of seconds between alerts for persistent foreign probes
 ALERT_THRESHOLD = 120
@@ -47,8 +47,8 @@ DEBUG = True
 #========
 
 # (BOOL) Enable/Disable alert modules
-ALERT_SMS = True
-ALERT_PUSHOVER = True
+ALERT_SMS = False
+ALERT_PUSHOVER = False
 
 #==================
 # ALERT_SMS CONFIG
