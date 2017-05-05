@@ -23,7 +23,7 @@ ADMIN_OUI = 'Admin OUI'
 ADMIN_IGNORE = False
 
 # (INT) RSSI threshold for triggering alerts
-RSSI_THRESHOLD = -70
+RSSI_THRESHOLD = -50
 
 # (INT) Number of seconds between alerts for persistent foreign probes
 ALERT_THRESHOLD = 120
